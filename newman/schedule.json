@@ -1,0 +1,443 @@
+{
+	"info": {
+		"_postman_id": "7b15ea42-42f4-4637-afb6-5987094906a3",
+		"name": "ScheduleTest",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "13668848"
+	},
+	"item": [
+		{
+			"name": "Basic Schedule Endpoint",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200)",
+							"})",
+							"",
+							"pm.test(\"Response contains episodes\", function () {",
+							"    pm.expect(pm.response.json()).to.be.an('array')",
+							"    pm.expect(pm.response.json()).to.not.be.empty",
+							"})",
+							"",
+							"pm.test(\"Episode object structure is correct\", function () {",
+							"    const episode = pm.response.json()[0]",
+							"    const dateRegex = /^\\d{4}-\\d{2}-\\d{2}$/",
+							"    const timeRegex = /^\\d{2}:\\d{2}$/",
+							"    ",
+							"    pm.expect(episode).to.have.property('id').that.is.a('number')",
+							"    pm.expect(episode).to.have.property('name').that.is.a('string')",
+							"    pm.expect(episode).to.have.property('season').that.is.a('number')",
+							"    pm.expect(episode).to.have.property('number').that.is.a('number')",
+							"    pm.expect(episode).to.have.property('airdate').to.match(dateRegex)",
+							"    pm.expect(episode).to.have.property('airtime').to.match(timeRegex)",
+							"    pm.expect(episode).to.have.property('show').that.is.an('object')",
+							"})",
+							"",
+							"pm.test(\"Episodes belong to the US country\", function () {",
+							"    const countrycode = 'US'",
+							"    const episodes = pm.response.json()",
+							"",
+							"    episodes.forEach(function (episode) {",
+							"        const networkCountry = episode.show.network?.country?.code",
+							"        const webChannelCountry = episode.show.webChannel?.country?.code",
+							"",
+							"        pm.expect(networkCountry === countrycode || webChannelCountry === countrycode).to.be.true",
+							"    })",
+							"    ",
+							"})",
+							"",
+							"pm.test(\"Image URL is not null\", function () {",
+							"    const episode = pm.response.json()[0]",
+							"",
+							"    pm.expect(episode.show.image.medium).to.not.be.null",
+							"    pm.expect(episode.show.image.original).to.not.be.null",
+							"})",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.tvmaze.com/schedule",
+					"protocol": "https",
+					"host": [
+						"api",
+						"tvmaze",
+						"com"
+					],
+					"path": [
+						"schedule"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Schedule endpoint with contry code US",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200)",
+							"})",
+							"",
+							"",
+							"pm.test(\"Each episode belongs to the country US\", function () {",
+							"    const responseJson = pm.response.json()",
+							"    responseJson.forEach(function (episode) {",
+							"        const networkCountry = episode.show.network?.country?.code",
+							"        const webChannelCountry = episode.show.webChannel?.country?.code",
+							"        pm.expect(networkCountry === 'US' || webChannelCountry === 'US').to.be.true",
+							"    })",
+							"",
+							"})",
+							"",
+							"pm.test(\"Episode object structure is correct\", function () {",
+							"    const episode = pm.response.json()[0]",
+							"    const dateRegex = /^\\d{4}-\\d{2}-\\d{2}$/",
+							"    const timeRegex = /^\\d{2}:\\d{2}$/",
+							"    ",
+							"    pm.expect(episode).to.have.property('id').that.is.a('number')",
+							"    pm.expect(episode).to.have.property('name').that.is.a('string')",
+							"    pm.expect(episode).to.have.property('season').that.is.a('number')",
+							"    pm.expect(episode).to.have.property('number').that.is.a('number')",
+							"    pm.expect(episode).to.have.property('airdate').to.match(dateRegex)",
+							"    pm.expect(episode).to.have.property('airtime').to.match(timeRegex)",
+							"    pm.expect(episode).to.have.property('show').that.is.an('object')",
+							"})",
+							"",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.tvmaze.com/schedule?country=US",
+					"protocol": "https",
+					"host": [
+						"api",
+						"tvmaze",
+						"com"
+					],
+					"path": [
+						"schedule"
+					],
+					"query": [
+						{
+							"key": "country",
+							"value": "US"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Schedule endpoint with date",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"pm.test(\"Each episode's airdate is equal to 2023-08-02\", function () {",
+							"    const responseJson = pm.response.json()",
+							"    responseJson.forEach(function (episode) {",
+							"        pm.expect(episode.airdate).to.equal('2023-08-02')",
+							"    })",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.tvmaze.com/schedule?date=2023-08-02",
+					"protocol": "https",
+					"host": [
+						"api",
+						"tvmaze",
+						"com"
+					],
+					"path": [
+						"schedule"
+					],
+					"query": [
+						{
+							"key": "date",
+							"value": "2023-08-02"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Schedule endpoint with country code GB and date",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"pm.test(\"Each episode's airdate is equal to 2023-08-02\", function () {",
+							"    const responseJson = pm.response.json()",
+							"    responseJson.forEach(function (episode) {",
+							"        pm.expect(episode.airdate).to.equal('2023-08-02')",
+							"    })",
+							"})",
+							"",
+							"",
+							"pm.test(\"Episodes belong to the specified country GB\", function () {",
+							"    const countrycode = 'GB'",
+							"    const episodes = pm.response.json()",
+							"",
+							"    episodes.forEach(function (episode) {",
+							"        const networkCountry = episode.show.network?.country?.code",
+							"        const webChannelCountry = episode.show.webChannel?.country?.code",
+							"",
+							"        pm.expect(networkCountry === countrycode || webChannelCountry === countrycode).to.be.true",
+							"    })",
+							"    ",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.tvmaze.com/schedule?country=GB&date=2023-08-02",
+					"protocol": "https",
+					"host": [
+						"api",
+						"tvmaze",
+						"com"
+					],
+					"path": [
+						"schedule"
+					],
+					"query": [
+						{
+							"key": "country",
+							"value": "GB"
+						},
+						{
+							"key": "date",
+							"value": "2023-08-02"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Basic Schedule Web endpoint",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200)",
+							"})",
+							"",
+							"",
+							"pm.test(\"Response is in JSON format\", function () {",
+							"    pm.response.to.be.json",
+							"})",
+							"",
+							"",
+							"pm.test(\"Response contains episodes\", function () {",
+							"    const episodes = pm.response.json()",
+							"    pm.expect(episodes.length).to.be.above(0)",
+							"})",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.tvmaze.com/schedule/web?",
+					"protocol": "https",
+					"host": [
+						"api",
+						"tvmaze",
+						"com"
+					],
+					"path": [
+						"schedule",
+						"web"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Schedule Web with date",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200)",
+							"})",
+							"",
+							"pm.test(\"Each episode's airdate is equal to 2023-08-02\", function () {",
+							"    const responseJson = pm.response.json()",
+							"    responseJson.forEach(function (episode) {",
+							"        pm.expect(episode.airdate).to.equal('2023-08-02')",
+							"    })",
+							"})",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.tvmaze.com/schedule/web?date=2023-08-02",
+					"protocol": "https",
+					"host": [
+						"api",
+						"tvmaze",
+						"com"
+					],
+					"path": [
+						"schedule",
+						"web"
+					],
+					"query": [
+						{
+							"key": "date",
+							"value": "2023-08-02"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Schedule Web with country code GB and date ",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200)",
+							"})",
+							"",
+							"pm.test(\"Each episode's airdate is equal to 2023-08-02\", function () {",
+							"    const responseJson = pm.response.json()",
+							"    responseJson.forEach(function (episode) {",
+							"        pm.expect(episode.airdate).to.equal('2023-08-02')",
+							"    })",
+							"})",
+							"",
+							"pm.test(\"Episodes belong to the specified country GB\", function () {",
+							"    const responseJson = pm.response.json()",
+							"    const countryCode = \"GB\"",
+							"",
+							"    responseJson.forEach(function (episode) {",
+							"        const webChannelCountryCode = episode._embedded?.show?.webChannel?.country?.code;",
+							"",
+							"        pm.expect(webChannelCountryCode).to.equal(countryCode)",
+							"    })",
+							"})",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.tvmaze.com/schedule/web?date=2023-08-02&country=GB",
+					"protocol": "https",
+					"host": [
+						"api",
+						"tvmaze",
+						"com"
+					],
+					"path": [
+						"schedule",
+						"web"
+					],
+					"query": [
+						{
+							"key": "date",
+							"value": "2023-08-02"
+						},
+						{
+							"key": "country",
+							"value": "GB"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "todayDate",
+			"value": "today"
+		}
+	]
+}
